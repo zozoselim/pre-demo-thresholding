@@ -6,7 +6,6 @@ from typing import List, Optional, Union, Any, Dict,Literal
 from sdks.novavision.src.base.model import Package, Images, Param, Inputs, Configs, Outputs, Response, Request, Output, Input, Config
 
 
-
 class InputImage(Input):
     name: Literal["inputImage"] = "inputImage"
     value: Images
@@ -22,26 +21,43 @@ class OutputImage(Output):
         title = "Image"
 
 class ConfigOffSet(Config):
-    name: Literal["ConfigOffSet"] = "ConfigOffSet"
-    value: int = Field(ge=-15.0, le=15.0)
+    """
+        It is a fine-tuning parameter which is subtracted from mean or weighted mean
+    """
+    name: Literal["offset"] = "offset"
+    value: int = Field(default=0, ge=-15.0, le=15.0)
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["integers between [-15, 15]"] = "integers between [-15, 15]"
     class Config:
-        title = "Off Set"
+        title = "Offset"
 
 class ConfigSubBlock(Config):
-    name: Literal["ConfigSubBlock"] = "ConfigSubBlock"
-    value: int = Field(ge=3.0, le=191.0)
+    """
+        Size of sub-block size which is used to calculate a threshold value
+    """
+    @validator('value')
+    def validate_odd_integer_range(cls, value):
+        if value % 2:
+            if value < 3 or value > 191:
+                raise ValueError('Invalid value: must be an odd integer between 3 and 191 (inclusive)')
+            return value
+        else:
+            raise ValueError('Invalid value: must be an odd integer between 3 and 191 (inclusive)')
+    name: Literal["subblock"] = "subblock"
+    value: int = Field(default=11, ge=3.0, le=191.0)
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
-    placeHolder: Literal["integers between [3, 191]"] = "integers between [3, 191]"
+    placeHolder: Literal["odd integers between [3, 191]"] = "odd integers between [3, 191]"
     class Config:
-        title = "Sub Block Size"
+        title = "SubBlock Size"
 
 class ConfigMaxVal(Config):
-    name: Literal["ConfigMaxValue"] = "ConfigMaxValue"
-    value: int = Field(ge=0, le=255.0)
+    """
+        Maximum value that can be assigned to pixels after thresholding
+    """
+    name: Literal["maxvalue"] = "maxvalue"
+    value: int = Field(default=255, ge=0, le=255.0)
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["integers between [0, 255]"] = "integers between [0, 255]"
@@ -49,73 +65,77 @@ class ConfigMaxVal(Config):
         title = "Max Value"
 
 class ConfigThresholdVal(Config):
-    name: Literal["ThresholdValue"] = "ThresholdValue"
-    value: int = Field(ge=0, le=255.0)
+    """
+        It is used to separate between foreground and background pixels
+    """
+    name: Literal["thresholdvalue"] = "thresholdvalue"
+    value: int = Field(default=127, ge=0, le=255.0)
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["integers between [0, 255]"] = "integers between [0, 255]"
     class Config:
         title = "Threshold Value"
 
-class ConfigAuto_TH(Config):
-    name: Literal["ConfigAuto_TH"]="ConfigAuto_TH"
+class ConfigTypeAutoThresholding(Config):
+    name: Literal["auto thresholding"]="auto thresholding"
     maxVal: ConfigMaxVal
-    value: Literal["ConfigAuto_TH"] ="ConfigAuto_TH"
+    value: Literal["auto thresholding"] ="auto thresholding"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
     class Config:
-        title = "Auto-TH"
+        title = "AUTO_TH"
 
-class ConfigToZeroINV_TH(Config):
-    name: Literal["ToZero-INV_TH"]="ToZeroINV_TH"
+class ConfigTypeBlackeningInv(Config):
+    name: Literal["blackening inv"]="blackening inv"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    value: Literal["ToZeroINV_TH"] ="ToZeroINV_TH"
+    value: Literal["blackening inv"] ="blackening inv"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
     class Config:
-        title = "ToZero-INV-TH"
+        title = "TOZERO_INV_TH"
 
-class ConfigToZero_TH(Config):
-    name: Literal["ToZero_TH"]="ToZero_TH"
+class ConfigTypeBlackening(Config):
+    name: Literal["blackening"]="blackening"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    value: Literal["ToZero_TH"] ="ToZero_TH"
+    value: Literal["blackening"] ="blackening"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
     class Config:
-        title = "ToZero-TH"
+        title = "TOZERO_TH"
 
-class ConfigTruncated_TH(Config):
-    name: Literal["Truncated_TH"]="Truncated_TH"
+
+class ConfigTypeColorLikeGrey(Config):
+    name: Literal["color like grey"]="color like grey"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    value: Literal["Truncated_TH"] ="Truncated_TH"
+    value: Literal["color like grey"] ="color like grey"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
     class Config:
-        title = "Truncated-TH"
+        title = "TRUNCATED_TH"
 
-class ConfigBinaryINV_TH(Config):
-    name: Literal["BinaryINV_TH"]="BinaryINV_TH"
+class ConfigTypeBlackWhiteInv(Config):
+    name: Literal["black white inv"]="black white inv"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    value: Literal["BinaryINV_TH"] ="BinaryINV_TH"
+    value: Literal["black white inv"] ="black white inv"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
     class Config:
-        title = "Binary-INV-TH"
+        title = "BINARY_INV_TH"
 
-class ConfigBinary_TH(Config):
-    name: Literal["Binary_TH"]="Binary_TH"
+
+class ConfigTypeBlackWhite(Config):
+    name: Literal["black white"]="black white"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    value: Literal["Binary_TH"] ="Binary_TH"
+    value: Literal["black white"] ="black white"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
     class Config:
-        title = "Binary-TH"
-
+        title = "BINARY_TH"
 
 class ConfigMean(Config):
     name: Literal["mean"] = "mean"
@@ -140,6 +160,9 @@ class ConfigGaussian(Config):
         title = "Gaussian"
 
 class ConfigLocalType(Config):
+    """
+        Advanced approaches used for local thresholding
+    """
     name: Literal["configLocalType"] = "configLocalType"
     value:Union[ConfigMean, ConfigGaussian]
     type: Literal["object"] = "object"
@@ -148,15 +171,15 @@ class ConfigLocalType(Config):
         title = "Type"
 
 class ConfigGlobalType(Config):
+    """
+        Simple approaches used for global thresholding
+    """
     name: Literal["configGlobalType"] = "configGlobalType"
-    value:Union[ConfigBinary_TH,ConfigBinaryINV_TH,ConfigTruncated_TH,ConfigToZero_TH,ConfigToZeroINV_TH,ConfigAuto_TH]
+    value:Union[ConfigTypeBlackWhite,ConfigTypeBlackWhiteInv,ConfigTypeColorLikeGrey,ConfigTypeBlackening,ConfigTypeBlackeningInv,ConfigTypeAutoThresholding]
     type: Literal["object"] = "object"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
     class Config:
         title = "Type"
-
-
-
 
 class ConfigTypeLocalThresholding(Config):
     configEdit: ConfigLocalType
@@ -179,7 +202,7 @@ class ConfigTypeGlobalThresholding(Config):
 
 class ConfigType(Config):
     """
-        The image
+        Thresholding methods
     """
     name: Literal["configType"] = "configType"
     value:Union[ConfigTypeGlobalThresholding,ConfigTypeLocalThresholding]
@@ -187,7 +210,7 @@ class ConfigType(Config):
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
 
     class Config:
-        title = "Type"
+        title = "Method"
 
 
 class ThresholdingInputs(Inputs):
@@ -227,7 +250,6 @@ class ThresholdingExecutor(Config):
                 "value": 0
             }
         }
-
 
 class ConfigExecutor(Config):
     name: Literal["ConfigExecutor"] = "ConfigExecutor"
