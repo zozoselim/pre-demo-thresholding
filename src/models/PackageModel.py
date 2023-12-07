@@ -9,14 +9,14 @@ from sdks.novavision.src.base.model import Package, Images, Param, Inputs, Confi
 class InputImage(Input):
     name: Literal["inputImage"] = "inputImage"
     value: Images
-    type: Literal["Images"] = "Images"
+    type: Literal["object"] = "object"
     class Config:
         title = "Image"
 
 class OutputImage(Output):
     name: Literal["outputImage"] = "outputImage"
     value: Images
-    type: Literal["Images"] = "Images"
+    type: Literal["object"] = "object"
     class Config:
         title = "Image"
 

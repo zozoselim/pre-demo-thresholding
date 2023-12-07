@@ -24,7 +24,7 @@ def infer():
                        value=image.encode64(np.asarray(
                            cv2.imread("/opt/project/components/Thresholding/resources/einstein.jpg")).astype(
                            np.float32), 'image/jpg'), type="Image")
-    imageList = Images(name="Images", value=[image_list], type="Images")
+    imageList = Images(name="Images", value=[image_list], type="list")
     inputImage = InputImage(value=imageList)
 
     subBlock = ConfigSubBlock(value=11)

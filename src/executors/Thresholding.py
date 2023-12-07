@@ -74,7 +74,7 @@ class Thresholding(Component):
             img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
             imgs.append(img)
 
-        imageList = Images(name="Images", value=imgs, type="Images")
+        imageList = Images(name="Images", value=imgs, type="list")
         outputImage = OutputImage(value=imageList)
         Outputs = ThresholdingOutputs(outputImage=outputImage)
         normalizationResponse = ThresholdingResponse(outputs=Outputs)
