@@ -20,12 +20,14 @@ from sdks.novavision.src.media.image import Image as image
 ENDPOINT_URL = "http://127.0.0.1:8000/api"
 
 def infer():
-    image_list = Image(name="DemoImage", uID="001", mimeType="image/jpg", encoding="base64",
+    images = Image(name="DemoImage", uID="001", mimeType="image/jpg", encoding="base64",
                        value=image.encode64(np.asarray(
-                           cv2.imread("/opt/project/components/Thresholding/resources/einstein.jpg")).astype(
+                           cv2.imread("/opt/project/components/Thresholding/resources/yorkshire_terrier.jpg")).astype(
                            np.float32), 'image/jpg'), type="Image")
-    imageList = Images(name="Images", value=[image_list], type="list")
-    inputImage = InputImage(value=imageList)
+
+    image_list = [images, images]
+    image_list = images
+    inputImage = InputImage(value=image_list)
 
     subBlock = ConfigSubBlock(value=11)
     offSet = ConfigOffSet(value=4)

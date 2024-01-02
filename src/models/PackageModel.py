@@ -3,22 +3,42 @@ import numbers
 from pydantic import Field, validator
 from typing import List, Optional, Union, Any, Dict,Literal
 
-from sdks.novavision.src.base.model import Package, Images, Param, Inputs, Configs, Outputs, Response, Request, Output, Input, Config
+from sdks.novavision.src.base.model import Package, Image, Param, Inputs, Configs, Outputs, Response, Request, Output, Input, Config
 
 
 class InputImage(Input):
     name: Literal["inputImage"] = "inputImage"
-    value: Images
-    type: Literal["object"] = "object"
+    value: Union[List[Image], Image]
+    type = "object"
+
+    @validator("type", pre=True, always=True)
+    def set_type_based_on_value(cls, value, values):
+        value = values.get('value')
+        if isinstance(value, Image):
+            return "object"
+        elif isinstance(value, list):
+            return "list"
+
     class Config:
         title = "Image"
 
+
 class OutputImage(Output):
     name: Literal["outputImage"] = "outputImage"
-    value: Images
-    type: Literal["object"] = "object"
+    value: Union[List[Image], Image]
+    type = "object"
+
+    @validator("type", pre=True, always=True)
+    def set_type_based_on_value(cls, value, values):
+        value = values.get('value')
+        if isinstance(value, Image):
+            return "object"
+        elif isinstance(value, list):
+            return "list"
+
     class Config:
         title = "Image"
+
 
 class ConfigOffSet(Config):
     """
@@ -31,6 +51,7 @@ class ConfigOffSet(Config):
     placeHolder: Literal["integers between [-15, 15]"] = "integers between [-15, 15]"
     class Config:
         title = "Offset"
+
 
 class ConfigSubBlock(Config):
     """
@@ -137,6 +158,7 @@ class ConfigTypeBlackWhite(Config):
     class Config:
         title = "BINARY_TH"
 
+
 class ConfigMean(Config):
     name: Literal["mean"] = "mean"
     maxVal: ConfigMaxVal
@@ -147,6 +169,7 @@ class ConfigMean(Config):
     field: Literal["option"] = "option"
     class Config:
         title = "Mean"
+
 
 class ConfigGaussian(Config):
     name: Literal["gaussian"] = "gaussian"

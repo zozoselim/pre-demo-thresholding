@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 from sdks.novavision.src.base.component import Component
-from components.Thresholding.src.models.PackageModel import PackageConfigs,ConfigExecutor,PackageModel,ThresholdingExecutor,ThresholdingResponse,ThresholdingOutputs,OutputImage,Images
+from components.Thresholding.src.models.PackageModel import PackageConfigs,ConfigExecutor,PackageModel,ThresholdingExecutor,ThresholdingResponse,ThresholdingOutputs,OutputImage
 from sdks.novavision.src.base.response import Response
 from pydantic import ValidationError
 from sdks.novavision.src.media.image import Image
@@ -15,9 +15,10 @@ class Thresholding(Component):
             super().__init__(request)
             self.request.model = PackageModel(**(self.request.data))
             self.type = self.request.get_param("configType")
-            self.images = self.request.get_param("Images")
+            #self.images = self.request.get_param("Images")
+            self.images = self.request.get_param("inputImage")
+            self.islist = Image.is_list(self.images)
             self.load_parameters()
-
 
         except ValidationError as e:
             self.error_list.append({"error": "hata_normalization"})
@@ -66,16 +67,21 @@ class Thresholding(Component):
             elif self.local_type == "gaussian":
                 th_image = cv2.adaptiveThreshold(image, self.max_value, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,self.sub_block, self.off_set)
 
-        return  th_image
+        return th_image
 
     def run(self):
-        imgs = []
-        for img in self.images:
+        image = []
+        if (self.islist):
+            for img in self.images:
+                img = Image.get_image(img)
+                img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
+                image.append(img)
+        else:
+            img = Image.get_image(self.images)
             img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
-            imgs.append(img)
+            image = img
 
-        imageList = Images(name="Images", value=imgs, type="list")
-        outputImage = OutputImage(value=imageList)
+        outputImage = OutputImage(value=image)
         Outputs = ThresholdingOutputs(outputImage=outputImage)
         normalizationResponse = ThresholdingResponse(outputs=Outputs)
         normalizationExecutor = ThresholdingExecutor(value=normalizationResponse)
