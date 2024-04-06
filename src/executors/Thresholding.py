@@ -1,12 +1,14 @@
 
 import cv2
+import sys
 import numpy as np
 from sdks.novavision.src.base.component import Component
 from components.Thresholding.src.models.PackageModel import PackageConfigs,ConfigExecutor,PackageModel,ThresholdingExecutor,ThresholdingResponse,ThresholdingOutputs,OutputImage
 from sdks.novavision.src.base.response import Response
 from pydantic import ValidationError
 from sdks.novavision.src.media.image import Image
-
+from sdks.novavision.src.base.redis import RedisPubSubManager
+from sdks.novavision.src.base.app import App
 
 class Thresholding(Component):
     def __init__(self, request,bootstrap):
@@ -16,7 +18,12 @@ class Thresholding(Component):
             self.request.model = PackageModel(**(self.request.data))
             self.type = self.request.get_param("configType")
             #self.images = self.request.get_param("Images")
-            self.images = self.request.get_param("inputImage")
+            if App.get_app_mode() == 'runtime':
+                self.r = RedisPubSubManager()
+                self.images = self.request.get_param("inputImage")
+                self.images["value"] = RedisPubSubManager().r.get(self.images["value"])
+            elif App.get_app_mode() == 'api':
+                self.images = self.request.get_param("inputImage")
             self.islist = Image.is_list(self.images)
             self.load_parameters()
 
@@ -79,6 +86,9 @@ class Thresholding(Component):
         else:
             img = Image.get_image(self.images)
             img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
+            if App.get_app_mode() == 'runtime':
+                self.r.redis_set_frame(img.value, self.request.model.uID)
+                img.value = f'redis_{self.request.model.uID}_outputImage'
             image = img
 
         outputImage = OutputImage(value=image)
@@ -88,5 +98,8 @@ class Thresholding(Component):
         executor = ConfigExecutor(value=normalizationExecutor)
         packageConfigs = PackageConfigs(executor=executor)
         packageModel = PackageModel(configs=packageConfigs)
-        return Response(model=packageModel).response()
+        Response(model=packageModel).response()
 
+
+if "__main__" == __name__:
+    r = RedisPubSubManager()._subscribe(room_id=sys.argv[1])
