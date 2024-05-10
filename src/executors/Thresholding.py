@@ -2,6 +2,9 @@
 import cv2
 import sys
 import numpy as np
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
+
 from sdks.novavision.src.base.component import Component
 from components.Thresholding.src.models.PackageModel import PackageConfigs,ConfigExecutor,PackageModel,ThresholdingExecutor,ThresholdingResponse,ThresholdingOutputs,OutputImage
 from sdks.novavision.src.base.response import Response
@@ -9,6 +12,7 @@ from pydantic import ValidationError
 from sdks.novavision.src.media.image import Image
 from sdks.novavision.src.base.redis import RedisPubSubManager
 from sdks.novavision.src.base.app import App
+
 
 class Thresholding(Component):
     def __init__(self, request,bootstrap):
@@ -21,7 +25,7 @@ class Thresholding(Component):
             if App.get_app_mode() == 'runtime':
                 self.r = RedisPubSubManager()
                 self.images = self.request.get_param("inputImage")
-                self.images["value"] = RedisPubSubManager().r.get(self.images["value"])
+                self.images["value"] = self.r.redis_stream_get_frame_range(self.images["value"])
             elif App.get_app_mode() == 'api':
                 self.images = self.request.get_param("inputImage")
             self.islist = Image.is_list(self.images)
@@ -87,7 +91,7 @@ class Thresholding(Component):
             img = Image.get_image(self.images)
             img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
             if App.get_app_mode() == 'runtime':
-                self.r.redis_set_frame(img.value, self.request.model.uID)
+                self.r.redis_stream_set_frame(img.value, self.request.model.uID)
                 img.value = f'redis_{self.request.model.uID}_outputImage'
             image = img
 
