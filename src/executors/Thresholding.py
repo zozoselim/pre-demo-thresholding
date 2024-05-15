@@ -15,19 +15,14 @@ from sdks.novavision.src.base.app import App
 
 
 class Thresholding(Component):
-    def __init__(self, request,bootstrap):
+    def __init__(self, request, bootstrap):
         self.error_list = []
         try:
             super().__init__(request)
             self.request.model = PackageModel(**(self.request.data))
             self.type = self.request.get_param("configType")
-            #self.images = self.request.get_param("Images")
-            if App.get_app_mode() == 'runtime':
-                self.r = RedisPubSubManager()
-                self.images = self.request.get_param("inputImage")
-                self.images["value"] = self.r.redis_stream_get_frame_range(self.images["value"])
-            elif App.get_app_mode() == 'api':
-                self.images = self.request.get_param("inputImage")
+            self.images = self.request.get_param("inputImage")
+            self.r = RedisPubSubManager()
             self.islist = Image.is_list(self.images)
             self.load_parameters()
 
@@ -52,7 +47,7 @@ class Thresholding(Component):
         model = {"models": " "}
         return model
 
-    def thresholding(self,image):
+    def thresholding(self, image):
         image = np.asarray(image).astype(np.uint8)
 
         if len(image.shape)==3:
@@ -89,11 +84,8 @@ class Thresholding(Component):
                 image.append(img)
         else:
             img = Image.get_image(self.images)
-            img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
-            if App.get_app_mode() == 'runtime':
-                self.r.redis_stream_set_frame(img.value, self.request.model.uID)
-                img.value = f'redis_{self.request.model.uID}_outputImage'
-            image = img
+            img.value = np.asarray(self.thresholding(np.array(img.value)))
+            image = Image.set_image(img, self.request.model.uID)
 
         outputImage = OutputImage(value=image)
         Outputs = ThresholdingOutputs(outputImage=outputImage)
