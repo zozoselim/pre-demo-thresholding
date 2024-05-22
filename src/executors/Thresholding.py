@@ -19,6 +19,7 @@ class Thresholding(Component):
         self.error_list = []
         try:
             super().__init__(request)
+            self.mode_debug = self.request.data.get("debug", False)
             self.request.model = PackageModel(**(self.request.data))
             self.type = self.request.get_param("configType")
             self.images = self.request.get_param("inputImage")
@@ -83,9 +84,9 @@ class Thresholding(Component):
                 img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
                 image.append(img)
         else:
-            img = Image.get_image(self.images)
+            img = Image.get_image(self.images, self.mode_debug)
             img.value = np.asarray(self.thresholding(np.array(img.value)))
-            image = Image.set_image(img, self.request.model.uID)
+            image = Image.set_image(img, self.request.model.uID, self.mode_debug)
 
         outputImage = OutputImage(value=image)
         Outputs = ThresholdingOutputs(outputImage=outputImage)
@@ -94,7 +95,16 @@ class Thresholding(Component):
         executor = ConfigExecutor(value=normalizationExecutor)
         packageConfigs = PackageConfigs(executor=executor)
         packageModel = PackageModel(configs=packageConfigs)
-        Response(model=packageModel).response()
+
+        if App.get_app_mode() == 'runtime' and App.get_type_engine() == 'nv-mqtt':
+            if self.mode_debug == True:
+                return Response(model=packageModel, mode_debug=self.mode_debug).response()
+            else:
+                Response(model=packageModel, mode_debug=self.mode_debug).response()
+        elif App.get_app_mode() == 'api' or (App.get_app_mode() == 'runtime' and App.get_type_engine() == 'nv-thrd'):
+            return Response(model=packageModel, mode_debug=self.mode_debug).response()
+        else:
+            print("App mode not supported")
 
 
 if "__main__" == __name__:
