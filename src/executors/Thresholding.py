@@ -1,22 +1,29 @@
 
 import cv2
+import sys
 import numpy as np
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
+
 from sdks.novavision.src.base.component import Component
 from components.Thresholding.src.models.PackageModel import PackageConfigs,ConfigExecutor,PackageModel,ThresholdingExecutor,ThresholdingResponse,ThresholdingOutputs,OutputImage
 from sdks.novavision.src.base.response import Response
 from pydantic import ValidationError
 from sdks.novavision.src.media.image import Image
+from sdks.novavision.src.base.redis import RedisPubSubManager
+from sdks.novavision.src.base.app import App
 
 
 class Thresholding(Component):
-    def __init__(self, request,bootstrap):
+    def __init__(self, request, bootstrap):
         self.error_list = []
         try:
             super().__init__(request)
+            self.mode_debug = self.request.data.get("debug", False)
             self.request.model = PackageModel(**(self.request.data))
             self.type = self.request.get_param("configType")
-            #self.images = self.request.get_param("Images")
             self.images = self.request.get_param("inputImage")
+            self.r = RedisPubSubManager()
             self.islist = Image.is_list(self.images)
             self.load_parameters()
 
@@ -41,7 +48,7 @@ class Thresholding(Component):
         model = {"models": " "}
         return model
 
-    def thresholding(self,image):
+    def thresholding(self, image):
         image = np.asarray(image).astype(np.uint8)
 
         if len(image.shape)==3:
@@ -77,9 +84,9 @@ class Thresholding(Component):
                 img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
                 image.append(img)
         else:
-            img = Image.get_image(self.images)
-            img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
-            image = img
+            img = Image.get_image(self.images, self.mode_debug)
+            img.value = np.asarray(self.thresholding(np.array(img.value)))
+            image = Image.set_image(img, self.request.model.uID, self.mode_debug)
 
         outputImage = OutputImage(value=image)
         Outputs = ThresholdingOutputs(outputImage=outputImage)
@@ -88,5 +95,17 @@ class Thresholding(Component):
         executor = ConfigExecutor(value=normalizationExecutor)
         packageConfigs = PackageConfigs(executor=executor)
         packageModel = PackageModel(configs=packageConfigs)
-        return Response(model=packageModel).response()
 
+        if App.get_app_mode() == 'runtime' and App.get_type_engine() == 'nv-mqtt':
+            if self.mode_debug == True:
+                return Response(model=packageModel, mode_debug=self.mode_debug).response()
+            else:
+                Response(model=packageModel, mode_debug=self.mode_debug).response()
+        elif App.get_app_mode() == 'api' or (App.get_app_mode() == 'runtime' and App.get_type_engine() == 'nv-thrd'):
+            return Response(model=packageModel, mode_debug=self.mode_debug).response()
+        else:
+            print("App mode not supported")
+
+
+if "__main__" == __name__:
+    r = RedisPubSubManager()._subscribe(room_id=sys.argv[1])
