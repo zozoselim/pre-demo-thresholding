@@ -25,6 +25,8 @@ class Thresholding(Component):
             if App.get_app_mode() == 'runtime' and App.get_type_engine() == 'nv-mqtt':
                 if self.mode_debug == False:
                     self.r = RedisWrapper()
+                else:
+                    self.r = None
             else:
                 self.r = None
             self.request.model = PackageModel(**(self.request.data))
