@@ -11,8 +11,7 @@ from components.Thresholding.src.models.PackageModel import PackageConfigs,Confi
 from sdks.novavision.src.base.response import Response
 from pydantic import ValidationError
 from sdks.novavision.src.media.image import Image
-from sdks.novavision.src.base.redis import RedisWrapper
-from sdks.novavision.src.base.app import App
+
 
 
 class Thresholding(Component):
@@ -21,14 +20,8 @@ class Thresholding(Component):
         try:
             super().__init__(request)
             self.start_time = datetime.now()
-            self.mode_debug = self.request.data.get("debug", False)
-            if App.get_app_mode() == 'runtime' and App.get_type_engine() == 'nv-mqtt':
-                if self.mode_debug == False:
-                    self.r = RedisWrapper()
-                else:
-                    self.r = None
-            else:
-                self.r = None
+            self.debug = self.request.data.get("debug", False)
+            self.bootstrap = bootstrap
             self.request.model = PackageModel(**(self.request.data))
             self.type = self.request.get_param("configType")
             self.images = self.request.get_param("inputImage")
@@ -88,13 +81,13 @@ class Thresholding(Component):
         image = []
         if (self.islist):
             for img in self.images:
-                img = Image.get_image(img)
+                img = Image.get_image(img, bootstrap=self.bootstrap)
                 img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
                 image.append(img)
         else:
-            img = Image.get_image(img=self.images, redis_PubSub=self.r, mode_debug=self.mode_debug)
+            img = Image.get_image(img=self.images, bootstrap=self.bootstrap)
             img.value = self.thresholding(img.value)
-            image = Image.set_image(img=img, redis_PubSub=self.r, package_uID=self.request.model.uID, mode_debug=self.mode_debug)
+            image = Image.set_image(img=img, package_uID=self.request.model.uID, bootstrap=self.bootstrap)
 
         outputImage = OutputImage(value=image)
         Outputs = ThresholdingOutputs(outputImage=outputImage)
@@ -108,16 +101,15 @@ class Thresholding(Component):
         self.now = datetime.now()
         print(f"Stop :", self.now.strftime("%Y-%m-%d %H:%M:%S:%f")[:-3], '\n\n')
 
-        if App.get_app_mode() == 'runtime' and App.get_type_engine() == 'nv-mqtt':
-            if self.mode_debug == True:
-                return Response(model=packageModel, mode_debug=self.mode_debug).response()
-            else:
-                Response(model=packageModel, redis_PubSub=self.r, mode_debug=self.mode_debug).response()
-        elif App.get_app_mode() == 'api' or (App.get_app_mode() == 'runtime' and App.get_type_engine() == 'nv-thrd'):
-            return Response(model=packageModel, mode_debug=self.mode_debug).response()
-        else:
-            print("App mode not supported")
+        return Response(model=packageModel, mode_debug=self.debug, bootstrap=self.bootstrap).response()
 
 
 if "__main__" == __name__:
-    r = RedisWrapper()._subscribe(room_id=sys.argv[1])
+    from sdks.novavision.src.base.application import Application
+    from sdks.novavision.src.base.environment import Environment
+    from sdks.novavision.src.base.redis import MqttClient
+
+    application = Application()
+    environment = Environment()
+    mqtt_client = MqttClient(application=application, environment=environment)
+    mqtt_client._subscribe(sys.argv[1])
