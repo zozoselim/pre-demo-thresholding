@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import os
 from datetime import datetime
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
 
 from sdks.novavision.src.base.component import Component
@@ -11,7 +12,6 @@ from components.Thresholding.src.models.PackageModel import PackageConfigs,Confi
 from sdks.novavision.src.base.response import Response
 from pydantic import ValidationError
 from sdks.novavision.src.media.image import Image
-
 
 
 class Thresholding(Component):
@@ -45,9 +45,8 @@ class Thresholding(Component):
             self.off_set = self.request.get_param("offset")
 
     @staticmethod
-    def bootstrap():
-        model = {"models": " "}
-        return model
+    def bootstrap() -> dict:
+        return {}
 
     def thresholding(self, image):
         image = np.asarray(image).astype(np.uint8)
