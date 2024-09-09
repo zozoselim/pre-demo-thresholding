@@ -100,7 +100,7 @@ class Thresholding(Component):
         self.now = datetime.now()
         print(f"Stop :", self.now.strftime("%Y-%m-%d %H:%M:%S:%f")[:-3], '\n\n')
 
-        return Response(model=packageModel, mode_debug=self.debug, bootstrap=self.bootstrap).response()
+        return Response(model=packageModel, debug=self.debug, bootstrap=self.bootstrap).response()
 
 
 if "__main__" == __name__:
