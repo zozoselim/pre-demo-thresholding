@@ -80,13 +80,13 @@ class Thresholding(Component):
         image = []
         if (self.islist):
             for img in self.images:
-                img = Image.get_image(img, bootstrap=self.bootstrap)
+                img = Image.get_frame(img, bootstrap=self.bootstrap)
                 img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
                 image.append(img)
         else:
-            img = Image.get_image(img=self.images, bootstrap=self.bootstrap)
+            img = Image.get_frame(img=self.images, bootstrap=self.bootstrap)
             img.value = self.thresholding(img.value)
-            image = Image.set_image(img=img, package_uID=self.request.model.uID, bootstrap=self.bootstrap)
+            image = Image.set_frame(img=img, package_uID=self.request.model.uID, bootstrap=self.bootstrap)
 
         outputImage = OutputImage(value=image)
         Outputs = ThresholdingOutputs(outputImage=outputImage)
