@@ -21,6 +21,7 @@ class Thresholding(Component):
             super().__init__(request)
             self.start_time = datetime.now()
             self.debug = self.request.data.get("debug", False)
+            self.flowUID = self.request.data.get("flowUID", None)
             self.bootstrap = bootstrap
             self.request.model = PackageModel(**(self.request.data))
             self.type = self.request.get_param("configType")
@@ -80,13 +81,15 @@ class Thresholding(Component):
         image = []
         if (self.islist):
             for img in self.images:
-                img = Image.get_image(img, bootstrap=self.bootstrap)
+                img = Image.get_frame(img, bootstrap=self.bootstrap)
+                if not img: return None
                 img.value = Image.encode64(np.asarray(self.thresholding(np.array(img.value))), img.mimeType)
                 image.append(img)
         else:
-            img = Image.get_image(img=self.images, bootstrap=self.bootstrap)
+            img = Image.get_frame(img=self.images, bootstrap=self.bootstrap)
+            if not img: return None
             img.value = self.thresholding(img.value)
-            image = Image.set_image(img=img, package_uID=self.request.model.uID, bootstrap=self.bootstrap)
+            image = Image.set_frame(img=img, package_uID=self.request.model.uID, bootstrap=self.bootstrap)
 
         outputImage = OutputImage(value=image)
         Outputs = ThresholdingOutputs(outputImage=outputImage)
@@ -94,13 +97,13 @@ class Thresholding(Component):
         normalizationExecutor = ThresholdingExecutor(value=normalizationResponse)
         executor = ConfigExecutor(value=normalizationExecutor)
         packageConfigs = PackageConfigs(executor=executor)
-        packageModel = PackageModel(configs=packageConfigs)
+        packageModel = PackageModel(configs=packageConfigs, flowUID=self.flowUID)
 
         print(f"Start :", self.start_time.strftime("%Y-%m-%d %H:%M:%S:%f")[:-3])
         self.now = datetime.now()
         print(f"Stop :", self.now.strftime("%Y-%m-%d %H:%M:%S:%f")[:-3], '\n\n')
 
-        return Response(model=packageModel, mode_debug=self.debug, bootstrap=self.bootstrap).response()
+        return Response(model=packageModel, debug=self.debug, bootstrap=self.bootstrap).response()
 
 
 if "__main__" == __name__:
