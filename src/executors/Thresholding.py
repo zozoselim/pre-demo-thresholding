@@ -16,9 +16,8 @@ from components.Thresholding.src.models.PackageModel import PackageModel
 
 class Thresholding(Component):
     def __init__(self, request, bootstrap):
-        super().__init__(request)
+        super().__init__(request, bootstrap)
         self.request.model = PackageModel(**(self.request.data))
-        self.initialize_request_data(request=request, bootstrap=bootstrap)
         self.type = self.request.get_param("configType")
         self.images = self.request.get_param("inputImage")
         self.load_parameters()
