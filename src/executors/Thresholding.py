@@ -16,9 +16,8 @@ from components.Thresholding.src.models.PackageModel import PackageModel
 
 class Thresholding(Component):
     def __init__(self, request, bootstrap):
-        super().__init__(request)
+        super().__init__(request, bootstrap)
         self.request.model = PackageModel(**(self.request.data))
-        self.initialize_request_data(request=request, bootstrap=bootstrap)
         self.type = self.request.get_param("configType")
         self.images = self.request.get_param("inputImage")
         self.load_parameters()
@@ -70,11 +69,11 @@ class Thresholding(Component):
 
     def run(self):
         img = Image.get_frame(img=self.images, redis_db=self.redis_db)
-        if not img: return None
+        if not img: return Response(context=self).response()
         img.value = self.thresholding(img.value)
         self.image = Image.set_frame(img=img, package_uID=self.uID, redis_db=self.redis_db)
         packageModel = build_response(context=self)
-        return Response(model=packageModel, bootstrap=self.bootstrap).response()
+        return Response(context=self, model=packageModel).response()
 
 
 if "__main__" == __name__:
