@@ -7,7 +7,6 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
 
 from sdks.novavision.src.media.image import Image
-from sdks.novavision.src.base.response import Response
 from sdks.novavision.src.base.component import Component
 from sdks.novavision.src.helper.executor import Executor
 from components.Thresholding.src.utils.response import build_response
@@ -36,7 +35,7 @@ class Thresholding(Component):
             self.off_set = self.request.get_param("offset")
 
     @staticmethod
-    def bootstrap() -> dict:
+    def bootstrap(config: dict) -> dict:
         return {}
 
     def thresholding(self, image):
@@ -69,11 +68,10 @@ class Thresholding(Component):
 
     def run(self):
         img = Image.get_frame(img=self.images, redis_db=self.redis_db)
-        if not img: return Response(context=self).response()
         img.value = self.thresholding(img.value)
         self.image = Image.set_frame(img=img, package_uID=self.uID, redis_db=self.redis_db)
         packageModel = build_response(context=self)
-        return Response(context=self, model=packageModel).response()
+        return packageModel
 
 
 if "__main__" == __name__:
