@@ -1,4 +1,3 @@
-
 from pydantic import Field, validator
 from typing import List, Optional, Union, Literal
 from sdks.novavision.src.base.model import Package, Image, Inputs, Configs, Outputs, Response, Request, Output, Input, Config
@@ -40,7 +39,10 @@ class OutputImage(Output):
 
 class ConfigOffSet(Config):
     """
-        It is a fine-tuning parameter which is subtracted from mean or weighted mean
+    Fine-tunes the threshold level for adaptive methods.
+    A constant value subtracted from the calculated mean.
+    - Positive values reduce noise (background becomes cleaner).
+    - Negative values detect fainter details.
     """
     name: Literal["offset"] = "offset"
     value: int = Field(default=0, ge=-15.0, le=15.0)
@@ -50,11 +52,17 @@ class ConfigOffSet(Config):
 
     class Config:
         title = "Offset"
+        json_schema_extra = {
+            "shortDescription": "Sensitivity Constant"
+        }
 
 
 class ConfigSubBlock(Config):
     """
-        Size of sub-block size which is used to calculate a threshold value
+    The size of the pixel neighborhood area used to calculate the local threshold.
+    - Smaller blocks: Focus on fine details (good for high frequency variance).
+    - Larger blocks: Focus on general shading (good for gradual lighting changes).
+    Must be an odd integer.
     """
     @validator('value')
     def validate_odd_integer_range(cls, value):
@@ -72,11 +80,15 @@ class ConfigSubBlock(Config):
 
     class Config:
         title = "SubBlock Size"
+        json_schema_extra = {
+            "shortDescription": "Neighborhood Area Size"
+        }
 
 
 class ConfigMaxVal(Config):
     """
-        Maximum value that can be assigned to pixels after thresholding
+    The pixel intensity value assigned to pixels that pass the threshold.
+    Usually 255 (White) to create a binary mask.
     """
     name: Literal["maxvalue"] = "maxvalue"
     value: int = Field(default=255, ge=0, le=255.0)
@@ -86,11 +98,15 @@ class ConfigMaxVal(Config):
 
     class Config:
         title = "Max Value"
+        json_schema_extra = {
+            "shortDescription": "Active Pixel Color"
+        }
 
 
 class ConfigThresholdVal(Config):
     """
-        It is used to separate between foreground and background pixels
+    The specific cutoff value (0-255) for Global Thresholding.
+    Pixels brighter than this value become the Max Value; darker ones become 0 (or vice versa).
     """
     name: Literal["thresholdvalue"] = "thresholdvalue"
     value: int = Field(default=127, ge=0, le=255.0)
@@ -100,6 +116,10 @@ class ConfigThresholdVal(Config):
 
     class Config:
         title = "Threshold Value"
+        json_schema_extra = {
+            "shortDescription": "Cutoff Point"
+        }
+
 
 
 class ConfigTypeAutoThresholding(Config):
@@ -201,7 +221,9 @@ class ConfigGaussian(Config):
 
 class ConfigLocalType(Config):
     """
-        Advanced approaches used for local thresholding
+    Selects the algorithm for calculating the dynamic threshold.
+    - Mean: Uses the average of the neighborhood.
+    - Gaussian: Uses a weighted average (better for preserving edges).
     """
     name: Literal["configLocalType"] = "configLocalType"
     value:Union[ConfigMean, ConfigGaussian]
@@ -210,11 +232,17 @@ class ConfigLocalType(Config):
 
     class Config:
         title = "Type"
+        json_schema_extra = {
+            "shortDescription": "Adaptive Algorithm"
+        }
 
 
 class ConfigGlobalType(Config):
     """
-        Simple approaches used for global thresholding
+    Selects the logic for applying the threshold.
+    - Binary: Standard black/white separation.
+    - Auto (Otsu): Automatically finds the best separation value.
+    - ToZero: Keeps pixels above threshold, darkens the rest.
     """
     name: Literal["configGlobalType"] = "configGlobalType"
     value:Union[ConfigTypeBlackWhite,ConfigTypeBlackWhiteInv,ConfigTypeColorLikeGrey,ConfigTypeBlackening,ConfigTypeBlackeningInv,ConfigTypeAutoThresholding]
@@ -223,6 +251,9 @@ class ConfigGlobalType(Config):
 
     class Config:
         title = "Type"
+        json_schema_extra = {
+            "shortDescription": "Separation Logic"
+        }
 
 
 class ConfigTypeLocalThresholding(Config):
@@ -249,7 +280,9 @@ class ConfigTypeGlobalThresholding(Config):
 
 class ConfigType(Config):
     """
-        Thresholding methods
+    Selects the thresholding strategy:
+    - Global: Uses a single cutoff value for the entire image (fast, good for uniform lighting).
+    - Local: Calculates different thresholds for small regions (slower, essential for shadows/uneven lighting).
     """
     name: Literal["configType"] = "configType"
     value:Union[ConfigTypeGlobalThresholding,ConfigTypeLocalThresholding]
@@ -258,6 +291,9 @@ class ConfigType(Config):
 
     class Config:
         title = "Method"
+        json_schema_extra = {
+            "shortDescription": "Segmentation Strategy"
+        }
 
 
 class ThresholdingInputs(Inputs):
