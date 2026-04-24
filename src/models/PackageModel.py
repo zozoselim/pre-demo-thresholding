@@ -348,9 +348,8 @@ class DemoSecondOutputs(Outputs):
     outputImage: OutputImage
     outputImageSecond: OutputImageSecond
 
-
 class ThresholdingRequest(Request):
-    inputs: Optional[ThresholdingInputs]
+    inputs: ThresholdingInputs
     configs: ThresholdingConfigs
 
     class Config:
@@ -359,7 +358,7 @@ class ThresholdingRequest(Request):
         }
 
 class DemoSecondRequest(Request):
-    inputs: Optional[DemoSecondInputs]
+    inputs: DemoSecondInputs
     configs: ThresholdingConfigs
 
     class Config:
