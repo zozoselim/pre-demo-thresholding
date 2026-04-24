@@ -423,4 +423,4 @@ class PackageConfigs(Configs):
 class PackageModel(Package):
     configs: PackageConfigs
     type: Literal["component"] = "component"
-    name : Literal["pre_demo_thresholding"] = "pre_demo_thresholding"
+    name : Literal["DemoThresholding"] = "DemoThresholding"
