@@ -9,16 +9,17 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
 from sdks.novavision.src.media.image import Image
 from sdks.novavision.src.base.component import Component
 from sdks.novavision.src.helper.executor import Executor
-from components.Thresholding.src.utils.response import build_response
-from components.Thresholding.src.models.PackageModel import PackageModel
+from src.utils.response import build_response
+from src.models.PackageModel import PackageModel
 
 
-class Thresholding(Component):
+class DemoSecondExecutor(Component):
     def __init__(self, request, bootstrap):
         super().__init__(request, bootstrap)
         self.request.model = PackageModel(**(self.request.data))
         self.type = self.request.get_param("configType")
         self.images = self.request.get_param("inputImage")
+        self.second_images = self.request.get_param("inputImageSecond")
         self.load_parameters()
 
     def load_parameters(self):
@@ -67,9 +68,15 @@ class Thresholding(Component):
         return th_image
 
     def run(self):
-        img = Image.get_frame(img=self.images, redis_db=self.redis_db)
-        img.value = self.thresholding(img.value)
-        self.image = Image.set_frame(img=img, package_uID=self.uID, redis_db=self.redis_db)
+        img1 = Image.get_frame(img=self.images, redis_db=self.redis_db)
+        img2 = Image.get_frame(img=self.second_images, redis_db=self.redis_db)
+
+        img1.value = self.thresholding(img1.value)
+        img2.value = self.thresholding(img2.value)
+
+        self.image = Image.set_frame(img=img1, package_uID=self.uID, redis_db=self.redis_db)
+        self.imageSecond = Image.set_frame(img=img2, package_uID=self.uID, redis_db=self.redis_db)
+
         packageModel = build_response(context=self)
         return packageModel
 

@@ -36,6 +36,39 @@ class OutputImage(Output):
     class Config:
         title = "Image"
 
+class InputImageSecond(Input):
+    name: Literal["inputImageSecond"] = "inputImageSecond"
+    value: Union[List[Image], Image]
+    type: str = "object"
+
+    @validator("type", pre=True, always=True)
+    def set_type_based_on_value(cls, value, values):
+        value = values.get("value")
+        if isinstance(value, Image):
+            return "object"
+        elif isinstance(value, list):
+            return "list"
+
+    class Config:
+        title = "Second Image"
+
+
+class OutputImageSecond(Output):
+    name: Literal["outputImageSecond"] = "outputImageSecond"
+    value: Union[List[Image], Image]
+    type: str = "object"
+
+    @validator("type", pre=True, always=True)
+    def set_type_based_on_value(cls, value, values):
+        value = values.get("value")
+        if isinstance(value, Image):
+            return "object"
+        elif isinstance(value, list):
+            return "list"
+
+    class Config:
+        title = "Second Output Image"
+
 
 class ConfigOffSet(Config):
     """
@@ -299,6 +332,10 @@ class ConfigType(Config):
 class ThresholdingInputs(Inputs):
     inputImage: InputImage
 
+class DemoSecondInputs(Inputs):
+    inputImage: InputImage
+    inputImageSecond: InputImageSecond
+
 
 class ThresholdingConfigs(Configs):
     configType: ConfigType
@@ -306,6 +343,10 @@ class ThresholdingConfigs(Configs):
 
 class ThresholdingOutputs(Outputs):
     outputImage: OutputImage
+
+class DemoSecondOutputs(Outputs):
+    outputImage: OutputImage
+    outputImageSecond: OutputImageSecond
 
 
 class ThresholdingRequest(Request):
@@ -316,6 +357,19 @@ class ThresholdingRequest(Request):
         json_schema_extra = {
             "target": "configs"
         }
+
+class DemoSecondRequest(Request):
+    inputs: Optional[DemoSecondInputs]
+    configs: ThresholdingConfigs
+
+    class Config:
+        json_schema_extra = {
+            "target": "configs"
+        }
+
+
+class DemoSecondResponse(Response):
+    outputs: DemoSecondOutputs
 
 
 class ThresholdingResponse(Response):
@@ -336,10 +390,24 @@ class ThresholdingExecutor(Config):
             }
         }
 
+class DemoSecondExecutor(Config):
+    name: Literal["DemoSecondExecutor"] = "DemoSecondExecutor"
+    value: Union[DemoSecondRequest, DemoSecondResponse]
+    type: Literal["object"] = "object"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Demo Second Executor"
+        json_schema_extra = {
+            "target": {
+                "value": 1
+            }
+        }
+
 
 class ConfigExecutor(Config):
     name: Literal["ConfigExecutor"] = "ConfigExecutor"
-    value: Union[ThresholdingExecutor]
+    value: Union[ThresholdingExecutor, DemoSecondExecutor]
     type: Literal["executor"] = "executor"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
     class Config:
@@ -356,4 +424,4 @@ class PackageConfigs(Configs):
 class PackageModel(Package):
     configs: PackageConfigs
     type: Literal["component"] = "component"
-    name : Literal["Thresholding"] = "Thresholding"
+    name : Literal["thresholding-for-demo3"] = "thresholding-for-demo3"
