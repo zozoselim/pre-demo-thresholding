@@ -409,12 +409,10 @@ class ConfigExecutor(Config):
     value: Union[ThresholdingExecutor, DemoSecondExecutor]
     type: Literal["executor"] = "executor"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
+
     class Config:
         title = "Task"
-        json_schema_extra = {
-            "target": "value"
-        }
-
+        
 
 class PackageConfigs(Configs):
     executor: ConfigExecutor
