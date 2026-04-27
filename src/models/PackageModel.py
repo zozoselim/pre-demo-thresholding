@@ -348,9 +348,8 @@ class DemoSecondOutputs(Outputs):
     outputImage: OutputImage
     outputImageSecond: OutputImageSecond
 
-
 class ThresholdingRequest(Request):
-    inputs: Optional[ThresholdingInputs]
+    inputs: ThresholdingInputs
     configs: ThresholdingConfigs
 
     class Config:
@@ -359,7 +358,7 @@ class ThresholdingRequest(Request):
         }
 
 class DemoSecondRequest(Request):
-    inputs: Optional[DemoSecondInputs]
+    inputs: DemoSecondInputs
     configs: ThresholdingConfigs
 
     class Config:
@@ -410,12 +409,10 @@ class ConfigExecutor(Config):
     value: Union[ThresholdingExecutor, DemoSecondExecutor]
     type: Literal["executor"] = "executor"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
+
     class Config:
         title = "Task"
-        json_schema_extra = {
-            "target": "value"
-        }
-
+        
 
 class PackageConfigs(Configs):
     executor: ConfigExecutor
@@ -424,4 +421,4 @@ class PackageConfigs(Configs):
 class PackageModel(Package):
     configs: PackageConfigs
     type: Literal["component"] = "component"
-    name : Literal["pre_demo_thresholding"] = "pre_demo_thresholding"
+    name : Literal["DemoThresholdingg"] = "DemoThresholdingg"
