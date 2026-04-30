@@ -1,5 +1,5 @@
 from sdks.novavision.src.helper.package import PackageHelper
-from src.models.PackageModel import (
+from components.DemoThresholdingg.src.models.PackageModel import (
     PackageModel,
     PackageConfigs,
     ConfigExecutor,
@@ -10,7 +10,7 @@ from src.models.PackageModel import (
     DemoSecondExecutor,
     DemoSecondResponse,
     DemoSecondOutputs,
-    OutputImageSecond
+    OutputImageSecond,
 )
 
 
