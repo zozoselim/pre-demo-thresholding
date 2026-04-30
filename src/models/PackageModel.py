@@ -376,13 +376,13 @@ class ThresholdingResponse(Response):
 
 
 class ThresholdingExecutor(Config):
-    name: Literal["Thresholding"] = "Thresholding"
+    name: Literal["ThresholdingExecutor"] = "ThresholdingExecutor"
     value: Union[ThresholdingRequest, ThresholdingResponse]
     type: Literal["object"] = "object"
     field: Literal["option"] = "option"
 
     class Config:
-        title = "Thresholding"
+        title = "Thresholding Executor"
         json_schema_extra = {
             "target": {
                 "value": 0
