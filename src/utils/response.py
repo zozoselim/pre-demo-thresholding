@@ -25,7 +25,6 @@ def build_response(context):
         )
 
         response = DemoSecondResponse(outputs=outputs)
-        selectedExecutor = response
 
     else:
         outputImage = OutputImage(value=context.image)
@@ -33,11 +32,9 @@ def build_response(context):
         outputs = ThresholdingOutputs(outputImage=outputImage)
 
         response = ThresholdingResponse(outputs=outputs)
-        selectedExecutor = response
 
-    executor = ConfigExecutor(value=selectedExecutor)
+    executor = ConfigExecutor(value=response)
     packageConfigs = PackageConfigs(executor=executor)
     package = PackageHelper(packageModel=PackageModel, packageConfigs=packageConfigs)
-    packageModel = package.build_model(context)
 
-    return packageModel
+    return package.build_model(context)
