@@ -1,4 +1,3 @@
-
 import os
 import cv2
 import sys
@@ -17,7 +16,7 @@ class DemoSecondExecutor(Component):
     def __init__(self, request, bootstrap):
         super().__init__(request, bootstrap)
         self.request.model = PackageModel(**(self.request.data))
-        self.type = self.request.get_param("configType") or "GlobalThresholding"    
+        self.type = self.request.get_param("configType")
         self.images = self.request.get_param("inputImage")
         self.second_images = self.request.get_param("inputImageSecond")
         self.load_parameters()
@@ -26,8 +25,8 @@ class DemoSecondExecutor(Component):
         if self.type == "GlobalThresholding":
             self.global_type = self.request.get_param("configGlobalType")
             if self.global_type in ["black white","black white inv","color like grey","blackening","blackening inv"]:
-                self.th_value = self.request.get_param("thresholdvalue") or 127
-            self.max_value = self.request.get_param("maxvalue") or 255
+                self.th_value = self.request.get_param("thresholdvalue")
+            self.max_value = self.request.get_param("maxvalue")
 
         elif self.type == "LocalThresholding":
             self.local_type = self.request.get_param("configLocalType")
