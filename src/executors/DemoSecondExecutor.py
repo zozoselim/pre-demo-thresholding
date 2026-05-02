@@ -19,6 +19,7 @@ class DemoSecondExecutor(Component):
         self.request.model = PackageModel(**(self.request.data))
         self.type = self.request.get_param("configType")
         self.images = self.request.get_param("inputImage")
+        self.second_images = self.request.get_param("inputImageSecond")
         self.load_parameters()
 
     def load_parameters(self):

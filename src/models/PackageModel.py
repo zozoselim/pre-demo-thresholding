@@ -334,11 +334,14 @@ class ThresholdingInputs(Inputs):
 
 class DemoSecondInputs(Inputs):
     inputImage: InputImage
+    inputImageSecond: InputImageSecond
 
 
 class ThresholdingConfigs(Configs):
     configType: ConfigType
 
+class DemoSecondConfigs(Configs):
+    configType: ConfigType
 
 class ThresholdingOutputs(Outputs):
     outputImage: OutputImage
@@ -355,10 +358,10 @@ class ThresholdingRequest(Request):
         json_schema_extra = {
             "target": "configs"
         }
-
+        
 class DemoSecondRequest(Request):
     inputs: DemoSecondInputs
-    configs: ThresholdingConfigs
+    configs: DemoSecondConfigs
 
     class Config:
         json_schema_extra = {
