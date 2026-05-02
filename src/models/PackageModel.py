@@ -334,7 +334,6 @@ class ThresholdingInputs(Inputs):
 
 class DemoSecondInputs(Inputs):
     inputImage: InputImage
-    inputImageSecond: InputImageSecond
 
 
 class ThresholdingConfigs(Configs):

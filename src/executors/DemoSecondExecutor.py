@@ -1,3 +1,4 @@
+   
 import os
 import cv2
 import sys
@@ -18,7 +19,6 @@ class DemoSecondExecutor(Component):
         self.request.model = PackageModel(**(self.request.data))
         self.type = self.request.get_param("configType")
         self.images = self.request.get_param("inputImage")
-        self.second_images = self.request.get_param("inputImageSecond")
         self.load_parameters()
 
     def load_parameters(self):
@@ -67,8 +67,13 @@ class DemoSecondExecutor(Component):
         return th_image
 
     def run(self):
-        img1 = Image.get_frame(img=self.images, redis_db=self.redis_db)
-        img2 = Image.get_frame(img=self.second_images, redis_db=self.redis_db)
+        frames = Image.get_frame(img=self.images, redis_db=self.redis_db)
+
+        if not isinstance(frames, list):
+            frames = [frames]
+
+        img1 = frames[0]
+        img2 = frames[1] if len(frames) > 1 else frames[0]
 
         img1.value = self.thresholding(img1.value)
         img2.value = self.thresholding(img2.value)
@@ -76,9 +81,7 @@ class DemoSecondExecutor(Component):
         self.image = Image.set_frame(img=img1, package_uID=self.uID, redis_db=self.redis_db)
         self.imageSecond = Image.set_frame(img=img2, package_uID=self.uID, redis_db=self.redis_db)
 
-        packageModel = build_response(context=self)
-        return packageModel
-
+        return build_response(context=self)
 
 if "__main__" == __name__:
     Executor(sys.argv[1]).run()
