@@ -153,24 +153,10 @@ class ConfigThresholdVal(Config):
             "shortDescription": "Cutoff Point"
         }
 
-class ConfigPreviewCheckbox(Config):
-    name: Literal["previewCheckbox"] = "previewCheckbox"
-    value: bool = False
-    type: Literal["boolean"] = "boolean"
-    field: Literal["checkbox"] = "checkbox"
-
-    class Config:
-        title = "Preview Checkbox"
-        json_schema_extra = {
-            "shortDescription": "Extra checkbox field"
-        }
-
-
 
 class ConfigTypeAutoThresholding(Config):
     name: Literal["auto thresholding"]="auto thresholding"
     maxVal: ConfigMaxVal
-    previewCheckbox: ConfigPreviewCheckbox
     value: Literal["auto thresholding"] ="auto thresholding"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
@@ -183,7 +169,6 @@ class ConfigTypeBlackeningInv(Config):
     name: Literal["blackening inv"]="blackening inv"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    previewCheckbox: ConfigPreviewCheckbox
     value: Literal["blackening inv"] ="blackening inv"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
@@ -196,7 +181,6 @@ class ConfigTypeBlackening(Config):
     name: Literal["blackening"]="blackening"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    previewCheckbox: ConfigPreviewCheckbox
     value: Literal["blackening"] ="blackening"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
@@ -209,7 +193,6 @@ class ConfigTypeColorLikeGrey(Config):
     name: Literal["color like grey"]="color like grey"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    previewCheckbox: ConfigPreviewCheckbox
     value: Literal["color like grey"] ="color like grey"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
@@ -222,7 +205,6 @@ class ConfigTypeBlackWhiteInv(Config):
     name: Literal["black white inv"]="black white inv"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    previewCheckbox: ConfigPreviewCheckbox
     value: Literal["black white inv"] ="black white inv"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
@@ -235,7 +217,6 @@ class ConfigTypeBlackWhite(Config):
     name: Literal["black white"]="black white"
     thresholdVal: ConfigThresholdVal
     maxVal: ConfigMaxVal
-    previewCheckbox: ConfigPreviewCheckbox
     value: Literal["black white"] ="black white"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
@@ -249,7 +230,6 @@ class ConfigMean(Config):
     maxVal: ConfigMaxVal
     subBlock: ConfigSubBlock
     offSet: ConfigOffSet
-    previewCheckbox: ConfigPreviewCheckbox
     value: Literal["mean"] = "mean"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
@@ -263,7 +243,6 @@ class ConfigGaussian(Config):
     maxVal: ConfigMaxVal
     subBlock: ConfigSubBlock
     offSet: ConfigOffSet
-    previewCheckbox: ConfigPreviewCheckbox
     value: Literal["gaussian"] = "gaussian"
     type: Literal["string"] = "string"
     field: Literal["option"] = "option"
