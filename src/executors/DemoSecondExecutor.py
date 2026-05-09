@@ -66,21 +66,24 @@ class DemoSecondExecutor(Component):
                 th_image = cv2.adaptiveThreshold(image, self.max_value, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,self.sub_block, self.off_set)
 
         return th_image
-
     def run(self):
-        frames = Image.get_frame(img=self.images, redis_db=self.redis_db)
-
-        if not isinstance(frames, list):
-            frames = [frames]
-
-        img1 = frames[0]
-        img2 = frames[1] if len(frames) > 1 else frames[0]
+        img1 = Image.get_frame(img=self.images, redis_db=self.redis_db)
+        img2 = Image.get_frame(img=self.second_images, redis_db=self.redis_db)
 
         img1.value = self.thresholding(img1.value)
         img2.value = self.thresholding(img2.value)
 
-        self.image = Image.set_frame(img=img1, package_uID=self.uID, redis_db=self.redis_db)
-        self.imageSecond = Image.set_frame(img=img2, package_uID=self.uID, redis_db=self.redis_db)
+        self.image = Image.set_frame(
+            img=img1,
+            package_uID=self.uID,
+            redis_db=self.redis_db
+        )
+
+        self.imageSecond = Image.set_frame(
+            img=img2,
+            package_uID=self.uID,
+            redis_db=self.redis_db
+        )
 
         return build_response(context=self)
 

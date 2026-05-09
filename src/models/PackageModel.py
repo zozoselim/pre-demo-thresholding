@@ -401,7 +401,7 @@ class DemoSecondExecutor(Config):
         title = "Demo Second Executor"
         json_schema_extra = {
             "target": {
-                "value": 1
+                "value": 0
             }
         }
 
